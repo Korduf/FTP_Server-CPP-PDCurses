@@ -1,0 +1,3 @@
+C:/Users/kiril/CLionProjects/ftp-server/cmake-build-debug/CMakeFiles/ftp_server.dir
+C:/Users/kiril/CLionProjects/ftp-server/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/kiril/CLionProjects/ftp-server/cmake-build-debug/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,4 @@
+C:\Users\kiril\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\223.8617.54\bin\cmake\win\x64\bin\cmake.exe -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=C:/Users/kiril/AppData/Local/JetBrains/Toolbox/apps/CLion/ch-0/223.8617.54/bin/ninja/win/x64/ninja.exe -G Ninja -S C:\Users\kiril\CLionProjects\ftp-server -B C:\Users\kiril\CLionProjects\ftp-server\cmake-build-debug
+-- Configuring done
+-- Generating done
+-- Build files have been written to: C:/Users/kiril/CLionProjects/ftp-server/cmake-build-debug
