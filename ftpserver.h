@@ -68,6 +68,7 @@ public:
     static bool TransferType(ClientStruct& client);
     static bool PortCommand(ClientStruct& client, char* args, Display* display);
     static bool ServerActiveResponce(ClientStruct& client); //noop
+    static bool DeleteServerFile(ClientStruct& client, char* args, Display* display);
     //Additional functions-----------------------------------------
     static bool DataConnection(ClientStruct& client, Display* display);
     //Data transfer command----------------------------------------

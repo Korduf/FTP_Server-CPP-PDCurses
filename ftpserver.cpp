@@ -159,8 +159,10 @@ bool FTPServer::CheckCommand(ClientStruct& client, Display* display)
     if (cmd == "FEAT") CommandSuccess(FeatureList(client), (char*)cmd.c_str(), display);
     if (cmd == "PWD") CommandSuccess(CurrentDir(client), (char*)cmd.c_str(), display);
     if (cmd == "CWD") CommandSuccess(ChangeDirectory(client, (char*)args.c_str()), (char*)cmd.c_str(), display);
+    if (cmd == "NOOP") CommandSuccess(ServerActiveResponce(client), (char*)cmd.c_str(), display);
     if (cmd == "LIST") CommandSuccess(ListDirectories(client, display), (char*)cmd.c_str(), display);
     if (cmd == "TYPE") CommandSuccess(TransferType(client), (char*)cmd.c_str(), display);
+    if (cmd == "DELE") CommandSuccess(DeleteServerFile(client, (char*)args.c_str(), display), (char*)cmd.c_str(), display);
     if (cmd == "PORT") CommandSuccess(PortCommand(client, (char*)args.c_str(), display), (char*)cmd.c_str(), display);
     if (cmd == "RETR") CommandSuccess(ReadyToDownload(client, (char*)args.c_str(), display), (char*)cmd.c_str(), display);
     if (cmd == "STOR") CommandSuccess(ReadyToUpload(client, (char*)args.c_str(), display), (char*)cmd.c_str(), display);
@@ -229,7 +231,7 @@ bool FTPServer::TransferType(ClientStruct& client)
 
 bool FTPServer::PortCommand(ClientStruct &client, char* args, Display* display)
 {
-    //-----------------------------------------тут подумать надо как сократить
+    //-----------------------------------------сократить
     std::stringstream string_stream;
     int address[4];
     int port[2];
@@ -270,7 +272,7 @@ bool FTPServer::PortCommand(ClientStruct &client, char* args, Display* display)
         //------------------------------------
         if (err_socket == 1) {
             string_stream << "200 " << "PORT command successful " << "\n";
-        } else {
+        } else { //?
             display->PrintPadOutput("ERROR: Port can't open");
             string_stream << "425 " << "PORT can't open " << "\n";
         }
@@ -304,9 +306,9 @@ bool FTPServer::ReadyToDownload(ClientStruct &client, char *args, Display *displ
     display->PrintPadOutput("SENDING FILE: " + file_name);
     if (file != nullptr) {
         SendResponce(client, "150 ", "Opening BINARY mode data connection");
-        while (size == 1024) {
+        while (size != 0) {
             size = fread(buffer, 1, 1024, file);
-            send(client.data_socket, buffer, size, 0);
+            send(client.data_socket, buffer, size, MSG_WAITALL);
         }
         shutdown(client.data_socket, SD_SEND);
         close(client.data_socket);
@@ -323,41 +325,48 @@ bool FTPServer::ReadyToDownload(ClientStruct &client, char *args, Display *displ
 bool FTPServer::ReadyToUpload(ClientStruct &client, char *args, Display *display)
 {
     std::string file_name(args);
-    std::ofstream file;
-    FILE *ofile;
+    FILE *file;
     char buffer[1024];
     int size = 1024;
-    ofile = fopen((client.current_dir + "\\" + file_name).c_str(), "wb");
-    file.open((client.current_dir + "\\" + file_name).c_str());
+    file = fopen((client.current_dir + "\\" + file_name).c_str(), "wb");
     display->PrintPadOutput("RECV FILE: " + file_name);
-    if (ofile != nullptr) {
-        /*struct stat stat_buffer;*/
+    if (file != nullptr) {
         SendResponce(client, "150 ", "Opening BINARY mode data connection");
-        /*do {
-            recv(client.data_socket, buffer, 1024, 0);
-            file << buffer;
-            fstat(client.data_socket, &stat_buffer);
-            //file.write(buffer, 1024);
-        } while (stat_buffer.st_size != 0);*/
-        /*do {
-            size = recv(client.data_socket, buffer, 1024, 0);
-            fwrite(buffer, 1, 1024, ofile);
-        } while (size == 1024);*/
         while (size != 0) {
-            size = recv(client.data_socket, buffer, 1024, 0);
-            fwrite(buffer, 1, 1024, ofile);
+            size = recv(client.data_socket, buffer, 1024, MSG_WAITALL);
+            fwrite(buffer, 1, 1024, file);
         }
-        file.close();
+        fclose(file);
         shutdown(client.data_socket, SD_SEND);
         close(client.data_socket);
         SendResponce(client, "226 ", "Data transmission OK");
     } else {
         close(client.data_socket);
         SendResponce(client, "550 ", "File not available");
-        file.close();
+        fclose(file);
     }
 
     return true;
+}
+
+bool FTPServer::ServerActiveResponce(ClientStruct &client)
+{
+    SendResponce(client, "200 ", "Server is still active");
+}
+
+bool FTPServer::DeleteServerFile(ClientStruct &client, char* args, Display* display)
+{
+    std::string file_name(args);
+    display->PrintPadOutput("Command: Delete file with name: " + file_name);
+    if (remove(args) == 0) {
+        SendResponce(client, "250 ", "Delete operation successful");
+        display->PrintPadOutput("SUCCESS: File delete");
+        return true;
+    } else {
+        SendResponce(client, "550 ", "Delete operation error");
+        display->PrintPadOutput("ERROR: Something happen");
+        return false;
+    }
 }
 
 bool FTPServer::ListDirectories(ClientStruct& client, Display* display)
