@@ -1,5 +1,5 @@
 # FTP Server
-This repository contains the code for FTP (File Transfer Protocol) server. The server allows users to connect via an FTP client and perform various file transfer operations.To implement the server, the Windows Socket API (winsock) was used. The interface was implemented using the PDCurses library
+This repository contains the code for FTP (File Transfer Protocol) server. The server allows users to connect via an FTP client and perform various file transfer operations. To implement the server, the Windows Socket API (winsock) was used. The interface was implemented using the PDCurses library
 
 # Features
 Multiple client connections: The server supports multiple client connections concurrently. Each client can connect to the server and perform file transfer operations independently.
